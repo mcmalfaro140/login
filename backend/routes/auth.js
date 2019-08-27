@@ -2,6 +2,7 @@ const router = require('express').Router();
 const mysql = require('mysql')
 const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
 dotenv.config();
 
@@ -34,9 +35,13 @@ router.post('/register', async (req, res) => {
     let sql = 'INSERT INTO users SET ?';
     let query = db.query(sql, newUser, (err, result) => {
         if(err){
-            res.status(400).send(err);
+            res.json({
+                userCreated: false
+            })
         }
-        res.send("New user was added succesfully")
+        res.json({
+            userCreated: true
+        })
     })
 });
 
@@ -50,9 +55,13 @@ router.post('/validateUser',(req, res) => {
             res.status(400).send(err);
         }
         if(result.length === 0){
-            res.send("User does not exist on the database")
+            res.json({
+                userFound: false //means that the user does not exist
+            })
         }else{
-            res.send("User already exist on the database")
+            res.json({
+                userFound: true // means that the username already exist
+            })
         }
         
     })
@@ -69,9 +78,13 @@ router.post('/login',async (req,res) => {
             //compare passwords
             const validPass = await bcrypt.compare(req.body.password, result[0].pass);
             if(!validPass){
-                res.send('Password and username did not match')
+                res.json({
+                    isLogged: false //there was an error with the username or password
+                })
             }else{
-                res.send('Logged in Successfully')
+                //create and assign token
+                const token = jwt.sign({id: result[0].id}, process.env.TOKEN_SECRET,{expiresIn: '12h'}) //next step make it exprire after 30min
+                res.header('auth-token', token).json({isLogged: true, myPass: token});
             }
         }
         
