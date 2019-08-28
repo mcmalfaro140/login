@@ -70,6 +70,7 @@ router.post('/validateUser',(req, res) => {
 //Log in router
 router.post('/login',async (req,res) => {
     let user = {user_name: `${req.body.username}`}
+    console.log(user, req.body.password )
     let sql = 'SELECT * FROM users WHERE ?';
     let query = db.query(sql, user, async (err, result) => {
         if(err){
@@ -78,11 +79,13 @@ router.post('/login',async (req,res) => {
             //compare passwords
             const validPass = await bcrypt.compare(req.body.password, result[0].pass);
             if(!validPass){
+                console.log('There was an error when trying to log in')
                 res.json({
                     isLogged: false //there was an error with the username or password
                 })
             }else{
                 //create and assign token
+                console.log('log in successful')
                 const token = jwt.sign({id: result[0].id}, process.env.TOKEN_SECRET,{expiresIn: '12h'}) //next step make it exprire after 30min
                 res.header('auth-token', token).json({isLogged: true, myPass: token});
             }

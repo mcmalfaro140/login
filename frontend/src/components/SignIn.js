@@ -1,4 +1,5 @@
 import React from 'react';
+import auth from "./auth";
 
 class SignIn extends React.Component {
     constructor() {
@@ -7,6 +8,7 @@ class SignIn extends React.Component {
             username : '',
             password : '',
             error: '',
+            status: false,
         };
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleUserChange = this.handleUserChange.bind(this);
@@ -37,7 +39,11 @@ class SignIn extends React.Component {
             });
         }else{
             let infoBox = document.getElementById('infoBox');
-            infoBox.style.display = 'block'
+            infoBox.style.display = 'inline'
+            let temp;
+            auth.login(this.state.username, this.state.password, () => {
+                this.props.history.push("/welcome");
+              });
         }
     }
     render() { 
@@ -55,9 +61,11 @@ class SignIn extends React.Component {
                     <div class="form-group">
                         <label className="label"> <i class="fas fa-key" style={{padding: 10}}></i>Password:</label>
                         <input type="password" class="form-control" placeholder="Enter Password" value={this.state.password} onChange={this.handlePasswordChange}/>
-                        
+                        <a href="#">Forgot username/password?</a>
+                        <div>
+                            <span style={{color: 'red'}} id="userErr">{this.state.error}</span>
+                        </div>
                     </div>
-                    <span style={{color: 'red'}} id="userErr">{this.state.error}</span>
                     <button id="btnSubmit" type="submit" class="btn btn-primary" style={{width: '50%',marginTop: '2%'}}>Submit</button>
                     <div className="status" id="infoBox">
                         <h1>Logging in </h1>
